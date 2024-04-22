@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Low Poly Tree and Rock with Three.js</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-delaunay/3.1.0/delaunay.min.js"></script>
+    <script>
+        // Inisialisasi scene, camera, dan renderer
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Fungsi untuk membuat pohon
+        function createTree(size, position) {
+            const greenColor = 0x00ff00;
+            const coneCount = 4; // Jumlah tumpukan limas untuk daun
+            const cylinderCount = 4; // Jumlah tumpukan tabung untuk batang
+
+            // Buat tumpukan limas (daun)
+            for (let i = 0; i < coneCount; i++) {
+                const coneGeometry = new THREE.ConeGeometry(size * (coneCount - i), size * 2, 4);
+                const coneMaterial = new THREE.MeshPhongMaterial({ color: greenColor }); // Menggunakan material Phong untuk bayangan
+                const cone = new THREE.Mesh(coneGeometry, coneMaterial);
+                cone.position.copy(position);
+                cone.position.y += (size * i * 1.5); // Jarak antar tumpukan
+                scene.add(cone);
+            }
+
+            // Buat tumpukan tabung (batang)
+            for (let i = 0; i < cylinderCount; i++) {
+                const cylinderGeometry = new THREE.CylinderGeometry(size / 4, size / 4, size * 2, 16);
+                const cylinderMaterial = new THREE.MeshPhongMaterial({ color: 0x8B4513 }); // Warna coklat muda
+                const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
+                cylinder.position.copy(position);
+                cylinder.position.y -= (size * i * 1.5); // Jarak antar tumpukan
+                scene.add(cylinder);
+            }
+        }
+
+        // Fungsi untuk membuat batu
+        function createRock(size, position) {
+            const rockGeometry = new THREE.SphereGeometry(size, 20, 20);
+            const rockMaterial = new THREE.MeshPhongMaterial({ color: 0x888888 }); // Menggunakan material Phong untuk bayangan
+            const rock = new THREE.Mesh(rockGeometry, rockMaterial);
+            rock.position.copy(position);
+            scene.add(rock);
+        }
+
+        // Fungsi untuk membuat latar tanah
+        function createGround() {
+            const groundGeometry = new THREE.PlaneGeometry(20, 20); // Ukuran bidang tanah
+            const groundMaterial = new THREE.MeshPhongMaterial({ color: 0x996633 }); // Warna tanah
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2; // Putar bidang tanah sehingga horizontal
+            ground.position.y = -5; // Atur posisi bidang tanah ke bawah
+            scene.add(ground);
+        }
+
+        // Panggil fungsi untuk membuat latar tanah
+        createGround();
+
+        // Atur pencahayaan
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Pencahayaan ambient
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5); // Pencahayaan sinar matahari
+        directionalLight.position.set(0, 1, 0); // Arah sinar matahari
+        scene.add(directionalLight);
+
+        // Atur posisi kamera
+        camera.position.z = 10;
+
+        // Buat pohon dan batu
+        createTree(1, new THREE.Vector3(-2, 0, 0)); // Pohon
+        createRock(0.5, new THREE.Vector3(2, 0, 0)); // Batu
+
+        // Event listener untuk menggerakkan kamera menggunakan tombol keyboard
+        document.addEventListener('keydown', function(event) {
+            const speed = 0.1;
+            switch(event.key) {
+                case 'w':
+                    camera.position.z -= speed;
+                    break;
+                case 's':
+                    camera.position.z += speed;
+                    break;
+                case 'a':
+                    camera.position.x -= speed;
+                    break;
+                case 'd':
+                    camera.position.x += speed;
+                    break;
+            }
+        });
+
+        // Event listener untuk menggerakkan objek menggunakan mouse
+        let isDragging = false;
+        let previousMousePosition = {
+            x: 0,
+            y: 0
+        };
+
+        document.addEventListener('mousedown', (event) => {
+            isDragging = true;
+            previousMousePosition.x = event.clientX;
+            previousMousePosition.y = event.clientY;
+        });
+
+        document.addEventListener('mousemove', (event) => {
+            if (isDragging) {
+                const deltaMove = {
+                    x: event.clientX - previousMousePosition.x,
+                    y: event.clientY - previousMousePosition.y
+                };
+
+                // Geser posisi objek
+                scene.children.forEach(child => {
+                    child.rotation.x += deltaMove.y * 0.01;
+                    child.rotation.y += deltaMove.x * 0.01;
+                });
+
+                previousMousePosition = {
+                    x: event.clientX,
+                    y: event.clientY
+                };
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        // Render scene
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
