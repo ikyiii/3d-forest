@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Low Poly Tree and Rock with Three.js</title>
+    <title>Three.js Realistic Scene with Shadows and Camera Controls</title>
     <style>
         body { margin: 0; }
         canvas { display: block; }
@@ -11,138 +11,140 @@
 </head>
 <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-delaunay/3.1.0/delaunay.min.js"></script>
     <script>
-        // Inisialisasi scene, camera, dan renderer
+        // Scene setup
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer();
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
         document.body.appendChild(renderer.domElement);
 
-        // Fungsi untuk membuat pohon
-        function createTree(size, position) {
-            const greenColor = 0x00ff00;
-            const coneCount = 4; // Jumlah tumpukan limas untuk daun
-            const cylinderCount = 4; // Jumlah tumpukan tabung untuk batang
+        // Ground
+        const groundGeometry = new THREE.BoxGeometry(10, 0.1, 10);
+        const groundMaterial = new THREE.MeshStandardMaterial({ color: 0xC2B280 });
+        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+        ground.position.y = -0.05; // Adjust position
+        ground.receiveShadow = true;
+        scene.add(ground);
 
-            // Buat tumpukan limas (daun)
-            for (let i = 0; i < coneCount; i++) {
-                const coneGeometry = new THREE.ConeGeometry(size * (coneCount - i), size * 2, 4);
-                const coneMaterial = new THREE.MeshPhongMaterial({ color: greenColor }); // Menggunakan material Phong untuk bayangan
-                const cone = new THREE.Mesh(coneGeometry, coneMaterial);
-                cone.position.copy(position);
-                cone.position.y += (size * i * 1.5); // Jarak antar tumpukan
-                scene.add(cone);
+        // Function to create a realistic tree
+        function createTree(positionX, positionZ) {
+            const treeGroup = new THREE.Group();
+
+            const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.2, 1, 32);
+            const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+            trunk.position.y = 0.5;
+            trunk.castShadow = true;
+            treeGroup.add(trunk);
+
+            const leafGeometry = new THREE.ConeGeometry(0.5, 1, 32);
+            const leafMaterial = new THREE.MeshStandardMaterial({ color: 0x00FF00 });
+
+            for (let i = 0; i < 3; i++) {
+                const leaf = new THREE.Mesh(leafGeometry, leafMaterial);
+                leaf.position.y = 1 + i * 0.6;
+                leaf.scale.set(1 - i * 0.2, 1 - i * 0.2, 1 - i * 0.2);
+                leaf.castShadow = true;
+                treeGroup.add(leaf);
             }
 
-            // Buat tumpukan tabung (batang)
-            for (let i = 0; i < cylinderCount; i++) {
-                const cylinderGeometry = new THREE.CylinderGeometry(size / 4, size / 4, size * 2, 16);
-                const cylinderMaterial = new THREE.MeshPhongMaterial({ color: 0x8B4513 }); // Warna coklat muda
-                const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
-                cylinder.position.copy(position);
-                cylinder.position.y -= (size * i * 1.5); // Jarak antar tumpukan
-                scene.add(cylinder);
-            }
+            treeGroup.position.set(positionX, 0, positionZ);
+            scene.add(treeGroup);
         }
 
-        // Fungsi untuk membuat batu
-        function createRock(size, position) {
-            const rockGeometry = new THREE.SphereGeometry(size, 20, 20);
-            const rockMaterial = new THREE.MeshPhongMaterial({ color: 0x888888 }); // Menggunakan material Phong untuk bayangan
+        // Function to create a realistic rock
+        function createRock(positionX, positionZ, scale) {
+            const rockGeometry = new THREE.DodecahedronGeometry(0.5 * scale, 0);
+            const rockMaterial = new THREE.MeshStandardMaterial({ color: 0xA52A2A });
             const rock = new THREE.Mesh(rockGeometry, rockMaterial);
-            rock.position.copy(position);
+            rock.position.set(positionX, 0.25 * scale, positionZ);
+            rock.scale.set(scale, scale, scale);
+            rock.castShadow = true;
             scene.add(rock);
         }
 
-        // Fungsi untuk membuat latar tanah
-        function createGround() {
-            const groundGeometry = new THREE.PlaneGeometry(20, 20); // Ukuran bidang tanah
-            const groundMaterial = new THREE.MeshPhongMaterial({ color: 0x996633 }); // Warna tanah
-            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-            ground.rotation.x = -Math.PI / 2; // Putar bidang tanah sehingga horizontal
-            ground.position.y = -5; // Atur posisi bidang tanah ke bawah
-            scene.add(ground);
-        }
+        // Creating trees
+        createTree(-2, -2); // Adjust positions
+        createTree(2, -2); // Adjust positions
 
-        // Panggil fungsi untuk membuat latar tanah
-        createGround();
+        // Creating rocks
+        createRock(-1, 1, 1.5); // Adjust positions
+        createRock(1, 1, 0.8); // Adjust positions
 
-        // Atur pencahayaan
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Pencahayaan ambient
+        // Adding lights
+        const ambientLight = new THREE.AmbientLight(0x404040, 1.5); // soft white light
         scene.add(ambientLight);
 
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5); // Pencahayaan sinar matahari
-        directionalLight.position.set(0, 1, 0); // Arah sinar matahari
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(5, 10, 7.5);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.width = 1024;
+        directionalLight.shadow.mapSize.height = 1024;
+        directionalLight.shadow.camera.near = 0.5;
+        directionalLight.shadow.camera.far = 50;
         scene.add(directionalLight);
 
-        // Atur posisi kamera
-        camera.position.z = 10;
+        // Camera positioning
+        camera.position.set(0, 5, 5);
+        camera.lookAt(0, 0, 0);
 
-        // Buat pohon dan batu
-        createTree(1, new THREE.Vector3(-2, 0, 0)); // Pohon
-        createRock(0.5, new THREE.Vector3(2, 0, 0)); // Batu
+        // Controls
+        let keys = {};
+        window.addEventListener('keydown', (event) => {
+            keys[event.key] = true;
+        });
+        window.addEventListener('keyup', (event) => {
+            keys[event.key] = false;
+        });
 
-        // Event listener untuk menggerakkan kamera menggunakan tombol keyboard
-        document.addEventListener('keydown', function(event) {
-            const speed = 0.1;
-            switch(event.key) {
-                case 'w':
-                    camera.position.z -= speed;
-                    break;
-                case 's':
-                    camera.position.z += speed;
-                    break;
-                case 'a':
-                    camera.position.x -= speed;
-                    break;
-                case 'd':
-                    camera.position.x += speed;
-                    break;
+        // Function to update camera movement based on keyboard input
+        function updateCameraMovement() {
+            const moveSpeed = 0.1;
+            const shiftSpeed = 0.05;
+            if (keys['w']) {
+                camera.position.z -= moveSpeed;
             }
-        });
-
-        // Event listener untuk menggerakkan objek menggunakan mouse
-        let isDragging = false;
-        let previousMousePosition = {
-            x: 0,
-            y: 0
-        };
-
-        document.addEventListener('mousedown', (event) => {
-            isDragging = true;
-            previousMousePosition.x = event.clientX;
-            previousMousePosition.y = event.clientY;
-        });
-
-        document.addEventListener('mousemove', (event) => {
-            if (isDragging) {
-                const deltaMove = {
-                    x: event.clientX - previousMousePosition.x,
-                    y: event.clientY - previousMousePosition.y
-                };
-
-                // Geser posisi objek
-                scene.children.forEach(child => {
-                    child.rotation.x += deltaMove.y * 0.01;
-                    child.rotation.y += deltaMove.x * 0.01;
-                });
-
-                previousMousePosition = {
-                    x: event.clientX,
-                    y: event.clientY
-                };
+            if (keys['s']) {
+                camera.position.z += moveSpeed;
             }
-        });
+            if (keys['a']) {
+                camera.position.x -= moveSpeed;
+            }
+            if (keys['d']) {
+                camera.position.x += moveSpeed;
+            }
+            if (keys['Shift']) {
+                camera.position.y -= shiftSpeed;
+            }
+            if (keys[' ']) {
+                camera.position.y += shiftSpeed;
+            }
+        }
 
-        document.addEventListener('mouseup', () => {
-            isDragging = false;
-        });
+        // Function to update camera rotation based on arrow keys
+        function updateCameraRotationArrowKeys() {
+            const rotateSpeed = 0.01;
+            if (keys['ArrowLeft']) {
+                camera.rotation.y += rotateSpeed;
+            }
+            if (keys['ArrowRight']) {
+                camera.rotation.y -= rotateSpeed;
+            }
+            if (keys['ArrowUp']) {
+                camera.rotation.x += rotateSpeed;
+            }
+            if (keys['ArrowDown']) {
+                camera.rotation.x -= rotateSpeed;
+            }
+        }
 
-        // Render scene
+        // Rendering function
         function animate() {
             requestAnimationFrame(animate);
+            updateCameraMovement();
+            updateCameraRotationArrowKeys();
             renderer.render(scene, camera);
         }
 
