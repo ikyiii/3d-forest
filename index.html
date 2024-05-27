@@ -21,10 +21,10 @@
         document.body.appendChild(renderer.domElement);
 
         // Ground
-        const groundGeometry = new THREE.BoxGeometry(10, 0.1, 10);
+        const groundGeometry = new THREE.BoxGeometry(7, 0.75, 7);
         const groundMaterial = new THREE.MeshStandardMaterial({ color: 0xC2B280 });
         const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-        ground.position.y = -0.05; // Adjust position
+        ground.position.y = -0.35; // Adjust position
         ground.receiveShadow = true;
         scene.add(ground);
 
@@ -39,7 +39,7 @@
             trunk.castShadow = true;
             treeGroup.add(trunk);
 
-            const leafGeometry = new THREE.ConeGeometry(0.5, 1, 32);
+            const leafGeometry = new THREE.ConeGeometry(0.6, 1, 32);
             const leafMaterial = new THREE.MeshStandardMaterial({ color: 0x00FF00 });
 
             for (let i = 0; i < 3; i++) {
@@ -66,12 +66,12 @@
         }
 
         // Creating trees
-        createTree(-2, -2); // Adjust positions
-        createTree(2, -2); // Adjust positions
+        createTree(-0.7, 2.1, -2); // Adjust positions
+        createTree(1, 0); // Adjust positions
 
         // Creating rocks
-        createRock(-1, 1, 1.5); // Adjust positions
-        createRock(1, 1, 0.8); // Adjust positions
+        createRock(-0.8, 0.5, 1.5); // Adjust positions
+        createRock(0.7, 1, 0.8); // Adjust positions
 
         // Adding lights
         const ambientLight = new THREE.AmbientLight(0x404040, 1.5); // soft white light
@@ -87,7 +87,7 @@
         scene.add(directionalLight);
 
         // Camera positioning
-        camera.position.set(0, 5, 5);
+        camera.position.set(0, 3, 5);
         camera.lookAt(0, 0, 0);
 
         // Controls
