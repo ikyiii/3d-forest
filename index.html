@@ -20,31 +20,51 @@
         renderer.shadowMap.enabled = true;
         document.body.appendChild(renderer.domElement);
 
-        // Ground
-        const groundGeometry = new THREE.BoxGeometry(7, 0.75, 7);
-        const groundMaterial = new THREE.MeshStandardMaterial({ color: 0xC2B280 });
-        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-        ground.position.y = -0.35; // Adjust position
-        ground.receiveShadow = true;
-        scene.add(ground);
+        // Texture loader
+        const textureLoader = new THREE.TextureLoader();
+
+        // Load textures
+        const sandTexture = textureLoader.load('sand.jpg', function (texture) {
+            texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+            texture.repeat.set(10, 10); // Adjust the repeat values to scale the texture
+        });
+        const soilTexture = textureLoader.load('soil.jpg');
+        const trunkTexture = textureLoader.load('trunk.jpg');
+        // Remove rock texture loading
+
+        // Ground (Sand part)
+        const sandGeometry = new THREE.BoxGeometry(7, 0.1, 7); // Thinner sand layer
+        const sandMaterial = new THREE.MeshStandardMaterial({ map: sandTexture });
+        const sand = new THREE.Mesh(sandGeometry, sandMaterial);
+        sand.position.y = -0.05; // Adjust position to sit on top of soil
+        sand.receiveShadow = true;
+        scene.add(sand);
+
+        // Ground (Soil part)
+        const soilGeometry = new THREE.BoxGeometry(7, 0.65, 7); // Increased height for soil
+        const soilMaterial = new THREE.MeshStandardMaterial({ map: soilTexture });
+        const soil = new THREE.Mesh(soilGeometry, soilMaterial);
+        soil.position.y = -0.425; // Adjust position to be below sand
+        soil.receiveShadow = true;
+        scene.add(soil);
 
         // Function to create a realistic tree
         function createTree(positionX, positionZ) {
             const treeGroup = new THREE.Group();
 
-            const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.2, 1, 32);
-            const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            const trunkGeometry = new THREE.CylinderGeometry(0.15, 0.15, 1.2, 32); // Shorter trunk
+            const trunkMaterial = new THREE.MeshStandardMaterial({ map: trunkTexture });
             const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
-            trunk.position.y = 0.5;
+            trunk.position.y = 0.6; // Adjust position to match new height
             trunk.castShadow = true;
             treeGroup.add(trunk);
 
             const leafGeometry = new THREE.ConeGeometry(0.6, 1, 32);
-            const leafMaterial = new THREE.MeshStandardMaterial({ color: 0x00FF00 });
+            const leafMaterial = new THREE.MeshStandardMaterial({ color: 0x004828 }); // Updated leaf color
 
             for (let i = 0; i < 3; i++) {
                 const leaf = new THREE.Mesh(leafGeometry, leafMaterial);
-                leaf.position.y = 1 + i * 0.6;
+                leaf.position.y = 1.2 + i * 0.4; // Adjusted position to make the leaves closer together
                 leaf.scale.set(1 - i * 0.2, 1 - i * 0.2, 1 - i * 0.2);
                 leaf.castShadow = true;
                 treeGroup.add(leaf);
@@ -56,17 +76,17 @@
 
         // Function to create a realistic rock
         function createRock(positionX, positionZ, scale) {
-            const rockGeometry = new THREE.DodecahedronGeometry(0.5 * scale, 0);
-            const rockMaterial = new THREE.MeshStandardMaterial({ color: 0xA52A2A });
+            const rockGeometry = new THREE.DodecahedronGeometry(0.25 * scale, 0); // Reduced scale by 50%
+            const rockMaterial = new THREE.MeshStandardMaterial({ color: 0x4e4a46 }); // Updated rock color
             const rock = new THREE.Mesh(rockGeometry, rockMaterial);
-            rock.position.set(positionX, 0.25 * scale, positionZ);
+            rock.position.set(positionX, 0.125 * scale, positionZ); // Adjusted position to match new scale
             rock.scale.set(scale, scale, scale);
             rock.castShadow = true;
             scene.add(rock);
         }
 
         // Creating trees
-        createTree(-0.7, 2.1, -2); // Adjust positions
+        createTree(-0.7, 2.1); // Adjust positions
         createTree(1, 0); // Adjust positions
 
         // Creating rocks
