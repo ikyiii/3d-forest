@@ -30,7 +30,7 @@
         });
         const soilTexture = textureLoader.load('soil.jpg');
         const trunkTexture = textureLoader.load('trunk.jpg');
-        // Remove rock texture loading
+        const stumpTexture = textureLoader.load('trunk.jpg'); // Load the texture for the stump
 
         // Ground (Sand part)
         const sandGeometry = new THREE.BoxGeometry(7, 0.1, 7); // Thinner sand layer
@@ -85,6 +85,42 @@
             scene.add(rock);
         }
         
+        // Function to create a campfire
+        function createCampfire(positionX, positionZ) {
+            const campfireGroup = new THREE.Group();
+
+            // Create wider tree stump
+            const stumpGeometry = new THREE.CylinderGeometry(0.3, 0.3, 0.3, 12);
+            const stumpMaterial = new THREE.MeshStandardMaterial({ map: stumpTexture }); // Apply texture to the stump
+            const stump = new THREE.Mesh(stumpGeometry, stumpMaterial);
+            stump.position.y = 0.15;
+            stump.castShadow = true;
+            campfireGroup.add(stump);
+
+            // Create low-poly flames with glowing effect
+            const flameMaterial = new THREE.MeshStandardMaterial({ color: 0xFFA500, emissive: 0xFF4500, emissiveIntensity: 1 });
+
+            function createFlamePiece() {
+                const flameGeometry = new THREE.ConeGeometry(Math.random() * 0.1 + 0.1, Math.random() * 0.2 + 0.2, Math.floor(Math.random() * 5 + 3));
+                const flamePiece = new THREE.Mesh(flameGeometry, flameMaterial);
+                flamePiece.position.set((Math.random() - 0.5) * 0.1, Math.random() * 0.4 + 0.25, (Math.random() - 0.5) * 0.1);
+                flamePiece.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+                flamePiece.castShadow = true;
+                return flamePiece;
+            }
+
+            for (let i = 0; i < 10; i++) {
+                campfireGroup.add(createFlamePiece());
+            }
+
+            // Add point light to simulate glowing effect
+            const flameLight = new THREE.PointLight(0xFFA500, 3, 3);
+            flameLight.position.set(0, 0.4, 0);
+            campfireGroup.add(flameLight);
+
+            campfireGroup.position.set(positionX, 0, positionZ);
+            scene.add(campfireGroup);
+        }
 
         // Creating trees
         createTree(-2, 2.1); 
@@ -92,10 +128,12 @@
         createTree(2, 2.5);
         createTree(-0.7, -2);
         
-
         // Creating rocks
         createRock(-0.8, 0.5, 1.6); // Adjust positions
         createRock(0.5, 1, 1.2); // Adjust positions
+
+        // Create campfire
+        createCampfire(0, 2);
 
         // Adding lights
         const ambientLight = new THREE.AmbientLight(0x404040, 1.5); // soft white light
@@ -178,52 +216,50 @@
             renderer.render(scene, camera);
         }
 
+        // Mouse controls for scene rotation
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
 
-        // Fungsi untuk menangani pergerakan mouse
-function onMouseMove(event) {
-    if (isDragging) {
-        const deltaMove = {
-            x: event.clientX - previousMousePosition.x,
-            y: event.clientY - previousMousePosition.y
-        };
+        function onMouseMove(event) {
+            if (isDragging) {
+                const deltaMove = {
+                    x: event.clientX - previousMousePosition.x,
+                    y: event.clientY - previousMousePosition.y
+                };
 
-        const rotationSpeed = 0.01;
+                const rotationSpeed = 0.01;
 
-        // Menggunakan quaternions untuk rotasi yang lebih stabil
-        const quaternionX = new THREE.Quaternion();
-        const quaternionY = new THREE.Quaternion();
+                const quaternionX = new THREE.Quaternion();
+                const quaternionY = new THREE.Quaternion();
 
-        quaternionX.setFromAxisAngle(new THREE.Vector3(1, 0, 0), deltaMove.y * rotationSpeed);
-        quaternionY.setFromAxisAngle(new THREE.Vector3(0, 1, 0), deltaMove.x * rotationSpeed);
+                quaternionX.setFromAxisAngle(new THREE.Vector3(1, 0, 0), deltaMove.y * rotationSpeed);
+                quaternionY.setFromAxisAngle(new THREE.Vector3(0, 1, 0), deltaMove.x * rotationSpeed);
 
-        scene.quaternion.multiplyQuaternions(quaternionY, scene.quaternion);
-        scene.quaternion.multiplyQuaternions(quaternionX, scene.quaternion);
+                scene.quaternion.multiplyQuaternions(quaternionY, scene.quaternion);
+                scene.quaternion.multiplyQuaternions(quaternionX, scene.quaternion);
 
-        previousMousePosition = {
-            x: event.clientX,
-            y: event.clientY
-        };
-    }
-}
+                previousMousePosition = {
+                    x: event.clientX,
+                    y: event.clientY
+                };
+            }
+        }
 
-// Fungsi untuk menangani saat mouse ditekan
-function onMouseDown(event) {
-    isDragging = true;
-    previousMousePosition = {
-        x: event.clientX,
-        y: event.clientY
-    };
-}
+        function onMouseDown(event) {
+            isDragging = true;
+            previousMousePosition = {
+                x: event.clientX,
+                y: event.clientY
+            };
+        }
 
-// Fungsi untuk menangani saat mouse dilepas
-function onMouseUp() {
-    isDragging = false;
-}
+        function onMouseUp() {
+            isDragging = false;
+        }
 
-// Menambahkan event listener untuk mouse
-document.addEventListener('mousemove', onMouseMove, false);
-document.addEventListener('mousedown', onMouseDown, false);
-document.addEventListener('mouseup', onMouseUp, false);
+        document.addEventListener('mousemove', onMouseMove, false);
+        document.addEventListener('mousedown', onMouseDown, false);
+        document.addEventListener('mouseup', onMouseUp, false);
 
         animate();
     </script>
