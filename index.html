@@ -120,6 +120,7 @@
 
             campfireGroup.position.set(positionX, 0, positionZ);
             scene.add(campfireGroup);
+            return flameLight; // Return the flame light to control it later
         }
 
         // Creating trees
@@ -133,8 +134,8 @@
         createRock(-0.8, 0.5, 1.6); // Adjust positions
         createRock(0.5, 1, 1.2); // Adjust positions
 
-        // Create campfire
-        createCampfire(0, 2);
+        // Create campfire and get the flame light reference
+        const campfireLight = createCampfire(0, 2);
 
         // Adding lights
         const ambientLight = new THREE.AmbientLight(0x404040, 1.5); // soft white light
@@ -155,6 +156,9 @@
 
         // Controls
         let keys = {};
+        let mainLightOn = true;
+        let campfireLightOn = true;
+
         window.addEventListener('keydown', (event) => {
             keys[event.key] = true;
         });
@@ -189,6 +193,24 @@
             }
             if (keys['ArrowDown']) {
                 camera.position.y += shiftSpeed;
+            }
+            if (keys['q']) {
+                if (mainLightOn) {
+                    directionalLight.intensity = 0;
+                } else {
+                    directionalLight.intensity = 1;
+                }
+                mainLightOn = !mainLightOn;
+                keys['q'] = false; // Prevents continuous toggling
+            }
+            if (keys['e']) {
+                if (campfireLightOn) {
+                    campfireLight.intensity = 0;
+                } else {
+                    campfireLight.intensity = 3;
+                }
+                campfireLightOn = !campfireLightOn;
+                keys['e'] = false; // Prevents continuous toggling
             }
         }
 
