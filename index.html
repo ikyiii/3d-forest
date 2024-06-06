@@ -24,13 +24,13 @@
         const textureLoader = new THREE.TextureLoader();
 
         // Load textures
-        const sandTexture = textureLoader.load('ADD3.jpg', function (texture) {
+        const sandTexture = textureLoader.load('./asset/ADD3.jpg', function (texture) {
             texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
             texture.repeat.set(10, 10); // Adjust the repeat values to scale the texture
         });
-        const soilTexture = textureLoader.load('soil.jpg');
-        const trunkTexture = textureLoader.load('trunk.jpg');
-        const stumpTexture = textureLoader.load('trunk.jpg'); // Load the texture for the stump
+        const soilTexture = textureLoader.load('./asset/soil.jpg');
+        const trunkTexture = textureLoader.load('./asset/trunk.jpg');
+        const stumpTexture = textureLoader.load('./asset/trunk.jpg'); // Load the texture for the stump
 
         // Ground (Sand part)
         const sandGeometry = new THREE.BoxGeometry(7, 0.1, 7); // Thinner sand layer
