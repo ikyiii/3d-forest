@@ -116,6 +116,9 @@
             // Add point light to simulate glowing effect
             const flameLight = new THREE.PointLight(0xFFA500, 3, 3);
             flameLight.position.set(0, 0.4, 0);
+            flameLight.castShadow = true; // Enable shadow casting for the campfire light
+            flameLight.shadow.mapSize.width = 1024;
+            flameLight.shadow.mapSize.height = 1024;
             campfireGroup.add(flameLight);
 
             campfireGroup.position.set(positionX, 0, positionZ);
