@@ -153,12 +153,9 @@
         directionalLight.shadow.camera.far = 50;
         scene.add(directionalLight);
 
-        // Initial camera positioning
-        const initialCameraPosition = { x: 0, y: 3, z: 5 };
-        const initialCameraLookAt = { x: 0, y: 0, z: 0 };
-
-        camera.position.set(initialCameraPosition.x, initialCameraPosition.y, initialCameraPosition.z);
-        camera.lookAt(initialCameraLookAt.x, initialCameraLookAt.y, initialCameraLookAt.z);
+        // Camera positioning
+        camera.position.set(0, 3, 5);
+        camera.lookAt(0, 0, 0);
 
         // Controls
         let keys = {};
@@ -194,12 +191,6 @@
             if (keys[' ']) {
                 camera.position.y += shiftSpeed;
             }
-            if (keys['ArrowUp']) {
-                camera.position.y -= shiftSpeed;
-            }
-            if (keys['ArrowDown']) {
-                camera.position.y += shiftSpeed;
-            }
             if (keys['q']) {
                 if (mainLightOn) {
                     directionalLight.intensity = 0;
@@ -218,9 +209,6 @@
                 campfireLightOn = !campfireLightOn;
                 keys['e'] = false; // Prevents continuous toggling
             }
-            if (keys['Control']) {
-                resetCameraPosition(); // Reset camera position when "Ctrl" is pressed
-            }
         }
 
         // Function to update camera rotation based on arrow keys
@@ -238,12 +226,6 @@
             if (keys['ArrowDown']) {
                 camera.rotation.x -= rotateSpeed;
             }
-        }
-
-        // Function to reset the camera to its initial position
-        function resetCameraPosition() {
-            camera.position.set(initialCameraPosition.x, initialCameraPosition.y, initialCameraPosition.z);
-            camera.lookAt(initialCameraLookAt.x, initialCameraLookAt.y, initialCameraLookAt.z);
         }
 
         // Rendering function
